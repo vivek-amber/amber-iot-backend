@@ -1,0 +1,21 @@
+
+
+services:
+  
+  bridge:
+    build:
+      context: ./bridge
+      dockerfile: Dockerfile
+    container_name: bridge
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  user:
+    build:
+      context: .
+      dockerfile: user/Dockerfile
+    container_name: user
+    ports:
+      - "8082:8082"
+    restart: unless-stopped

@@ -1,0 +1,67 @@
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Build outputs
+target/
+build/
+out/
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Application secrets
+application-local.yml
+application-dev.yml
+application-prod.yml
+application.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Java
+*.class
+
+# Spring Boot
+spring.log
+
+# Docker
+docker-data/
+volumes/
+
+# Node (if frontend later added)
+node_modules/
+
+# Test reports
+surefire-reports/
+failsafe-reports/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Keystores / Certificates
+*.jks
+*.p12
+*.pem
+*.key
+
+# Generated files
+generated/
+commands.txt
+
+# Coverage
+coverage/
+jacoco.exec
