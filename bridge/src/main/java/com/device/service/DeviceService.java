@@ -24,7 +24,7 @@ public class DeviceService {
 
         PendingCommand pendingCommand= mapper.mapCoomandDtoToPendingCommand(request);
 
-        redisService.savePendingCommand(request.getDeviceId(), pendingCommand);
+        redisService.savePendingCommand(request.getDeviceId(),request.getCmd(),pendingCommand);
 
         String topic = TopicFormatter.commandTopic(request.getCompanyId(), request.getDeviceId());
 

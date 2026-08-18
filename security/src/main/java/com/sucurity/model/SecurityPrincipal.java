@@ -35,5 +35,16 @@ public class SecurityPrincipal implements UserDetails{
         return user.userId();
     }
     
+    public String getCompanyId() {
+        return user.companyId();
+    }
+
+    public String getSessionId() {
+        return user.sessionId();
+    }
+    
+    public Integer getTokenVersion() {
+        return user.tokenVersion();
+    }
 
 }

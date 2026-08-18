@@ -32,7 +32,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Map<Object, Object>>> handleGenericException(Exception ex) {
-
+        
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Something went wrong. Please try again later."));
     }
 }

@@ -3,20 +3,18 @@ package com.device.dto;
 import java.util.List;
 import java.util.Map;
 
-import com.device.enums.Control;
-import com.device.enums.Mode;
 
 import lombok.Data;
 
 @Data
 public class ModeRule {
 
-    private Mode mode;
+    private String mode;
 
-    private List<Control> disabledControls;
+    private List<String> disabledControls;
 
-    private ControlDefaults defaults;
+    private Map<String, Object> defaults;
 
-    private Map<Control, String> messages;
+    private Map<String, String> messages;
 
 }

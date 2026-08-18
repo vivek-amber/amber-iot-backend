@@ -25,26 +25,48 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private Long expiration;
+    @Value("${jwt.access.expiration}")
+    private Long accessExpiration;
 
-    public String generateToken(AuthUser user) {
+    @Value("${jwt.refresh.expiration}")
+    private Long refreshExpiration;
+
+    public String generateAccessToken(AuthUser user, String sessionId, Integer tokenVersion) {
 
         Date now = new Date();
 
-        Date expiryDate = new Date(now.getTime() + expiration);
+        Date expiryDate = new Date(now.getTime() + accessExpiration);
 
         return Jwts.builder()
                 .setSubject(user.userId())
                 .claim(SecurityConstants.COMPANY_ID, user.companyId())
-                .claim(SecurityConstants.ROLES,user.roles())
+                .claim(SecurityConstants.ROLES, user.roles())
+                .claim("sessionId", sessionId)
+                .claim("tokenVersion", tokenVersion)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(
+                        Keys.hmacShaKeyFor(
+                                secret.getBytes(StandardCharsets.UTF_8)),
+                        SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(String userId, String sessionId) {
+
+        Date now = new Date();
+
+        Date expiryDate = new Date(now.getTime() + refreshExpiration);
+
+        return Jwts.builder()
+                .setSubject(userId)
+                .claim("sessionId", sessionId)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(
                     Keys.hmacShaKeyFor(
-                        secret.getBytes(StandardCharsets.UTF_8)),
-                        SignatureAlgorithm.HS256
-                )
+                                secret.getBytes(StandardCharsets.UTF_8)),
+                        SignatureAlgorithm.HS256)
                 .compact();
     }
     
@@ -53,7 +75,7 @@ public class JwtUtil {
         try {
 
             getClaims(token);
-
+            
         } catch (ExpiredJwtException ex) {
 
             throw new InvalidTokenException("Token Expired");
@@ -94,9 +116,15 @@ public class JwtUtil {
         Claims claims = getClaims(token);
 
         return new AuthUser(
-            claims.getSubject(),
-            claims.get(SecurityConstants.COMPANY_ID,String.class),
-            getRoles(token)
-        );
+                claims.getSubject(),
+                claims.get(SecurityConstants.COMPANY_ID, String.class),
+                getRoles(token),
+                claims.get("sessionId", String.class),
+                claims.get("tokenVersion", Integer.class));
+    }
+
+    public String getSessionId(String token) {
+
+        return getClaims(token).get("sessionId", String.class);
     }
 }

@@ -17,4 +17,7 @@ public class RegisterDeviceRequest {
 
     @NotBlank(message = "Model id is required")
     private String modelId;
+
+    //@NotBlank(message = "Firmware Version id is required")
+    //private String firmwareVersion;
 }

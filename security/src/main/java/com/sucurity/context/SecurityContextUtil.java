@@ -49,7 +49,17 @@ public class SecurityContextUtil {
     }
 
     public static List<String> currentRoles() {
-        
+
         return currentUser().roles();
+    }
+    
+    public static String currentSessionId() {
+
+        return currentUser().sessionId();
+    }
+    
+    public static Integer currentTokenVersion() {
+    
+        return currentUser().tokenVersion();
     }
 }

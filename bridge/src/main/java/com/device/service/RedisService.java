@@ -27,13 +27,13 @@ public class RedisService {
 
     private final ObjectMapper objectMapper;
 
-    public void savePendingCommand(String deviceId,PendingCommand command) {
+    public void savePendingCommand(String deviceId, String command, PendingCommand pending) {
 
         try {
 
-            String key = buildKey(deviceId,command.getCmi());
+            String key = buildKey(deviceId, command);
 
-            String value = objectMapper.writeValueAsString(command);
+            String value = objectMapper.writeValueAsString(pending);
 
             redisTemplate.opsForValue().set(key, value, TTL);
 
@@ -44,11 +44,10 @@ public class RedisService {
         }
     }
 
-    public PendingCommand getPendingCommand(String deviceId,Long cmdId) {
-
+    public PendingCommand getPendingCommand(String deviceId, String command) {
         try {
 
-            String key = buildKey(deviceId, cmdId);
+            String key = buildKey(deviceId, command);
 
             String value = redisTemplate.opsForValue().get(key);
 
@@ -56,24 +55,32 @@ public class RedisService {
                 return null;
             }
 
-            return objectMapper.readValue(value,PendingCommand.class);
+            return objectMapper.readValue(
+                    value,
+                    PendingCommand.class);
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to deserialize pending command",e);
+            throw new RuntimeException(
+                    "Failed to deserialize pending command",
+                    e);
         }
     }
 
-    public void deletePendingCommand(String deviceId,Long cmdId) {
+    public void deletePendingCommand(String deviceId, String command) {
 
-        String key = buildKey(deviceId, cmdId);
+        String key = buildKey(deviceId, command);
 
         redisTemplate.delete(key);
+
         redisTemplate.opsForSet().remove("pending:commands", key);
     }
 
-    private String buildKey(String deviceId, Long cmdId) {
+    private String buildKey(String deviceId, String command) {
 
-        return String.format("pending:device:%s:cmd:%s", deviceId, cmdId);
+        return String.format(
+                "pending:device:%s:control:%s",
+                deviceId,
+                command);
     }
     
     public Set<String> getPendingKeys() {
@@ -83,14 +90,14 @@ public class RedisService {
         return keys == null ? Collections.emptySet() : keys;
     }
     
-    public void updatePendingCommand(String deviceId, PendingCommand command) {
+    public void updatePendingCommand(String deviceId, String command, PendingCommand pending) {
 
-        savePendingCommand(deviceId, command);
+        savePendingCommand(deviceId, command, pending);
     }
     
-    public boolean exists(String deviceId, Long cmdId) {
-
-        return Boolean.TRUE.equals(redisTemplate.hasKey(buildKey(deviceId, cmdId)));
+    public boolean exists(String deviceId, String command) {
+        
+        return Boolean.TRUE.equals(redisTemplate.hasKey(buildKey(deviceId, command)));
     }
 
     public PendingCommand getPendingCommandByKey(String key) {
@@ -119,20 +126,21 @@ public class RedisService {
     
             String deviceId =TopicFormatter.extractDeviceId(topic);
     
-            PendingCommand pending =getPendingCommand(deviceId,response.getCmi());
-    
+            PendingCommand pending = getPendingCommand(
+                    deviceId,
+                    response.getCmd());
+
             if (pending == null) {
-    
-                log.warn("No pending command found for cmdId={}",response.getCmi());
-    
                 return;
             }
-    
+
+            if (!pending.getCmi().equals(response.getCmi())) {
+                return;
+            }
+
             if ("SUCCESS".equals(response.getSts())) {
-    
-                deletePendingCommand(deviceId,response.getCmi());
-    
-                log.info("Command completed successfully. deviceId={}, cmdId={}",deviceId,response.getCmi());
+
+                deletePendingCommand(deviceId,response.getCmd());
             }
     
         } catch (JsonProcessingException e) {

@@ -1,6 +1,8 @@
-# Amber Iot Platform
+# Amber IoT Platform
 
-A microservices-based backend platform powering the Amber IoT ecosystem. The platform provides secure user authentication, device communication, real-time telemetry processing, service discovery, and scalable infrastructure for connected IoT devices.
+Secure • Scalable • Real-Time IoT Backend Platform
+
+Built with Spring Boot Microservices, MQTT, PostgreSQL, WebSockets, Docker, and JWT Authentication.
 
 ---
 
@@ -179,16 +181,29 @@ Features:
 
 ### Device Service
 
-Responsible for Device registration.
+Responsible for managing registered IoT devices.
 
 **Port:** `8083`
 
 Features:
 
-- Device registration
-- Feature based controls
+- Device onboarding and registration
+- Device ownership mapping
+- Device status tracking
+- Feature-based command support
+- Device metadata management
 
 ---
+## Security Features
+
+- JWT Access Token Authentication
+- BCrypt Password Hashing
+- Email OTP Verification
+- Password Reset Workflow
+- Stateless Session Management
+- Route-Level Authorization
+- Protected Microservice Communication
+
 
 ## Current Status
 
@@ -218,22 +233,25 @@ Features:
 
 ✅ WebSocket Infrastructure
 
+✅ User Profiles
+
+✅ Redis Integration
+
 ---
 
 ### In Progress
 
-- Device Management APIs
-- Role-Based Access Control
-- User Profiles
+🚧 Device Management APIs
+🚧 Role-Based Access Control (RBAC)
 
 ---
 
 ### Planned
 
-- Notification Service
-- Redis Caching
-- Device Provisioning
-- Monitoring Dashboard
+📌 Notification Service
+📌 Device Provisioning
+📌 Monitoring & Analytics Dashboard
+📌 OTA Update Support
 
 ---
 
@@ -260,6 +278,33 @@ BACKEND_MICROSERVICE
 ```
 
 ---
+
+## Architecture Highlights
+
+- API Gateway as the single entry point
+- Service discovery using Eureka Registry
+- Stateless authentication with JWT
+- MQTT-based low-latency device communication
+- WebSocket support for real-time updates
+- Independent service deployment and scaling
+- Containerized infrastructure using Docker
+
+
+## Deployment Architecture
+
+```text
+Docker Containers
+│
+├── Registry Service
+├── Gateway Service
+├── User Service
+├── Bridge Service
+├── Device Service
+├── PostgreSQL
+├── Redis
+└── MQTT Broker
+```
+
 
 ## Getting Started
 
@@ -406,6 +451,20 @@ Protected APIs
 
 ## Author
 
-**Vivek**
+### Vivek
 
-Building scalable IoT platforms using Spring Boot Microservices, MQTT, PostgreSQL, WebSockets, Docker, JWT Authentication, and Service Discovery.
+Backend Engineer focused on building scalable IoT platforms using:
+
+- Spring Boot Microservices
+- MQTT & Real-Time Communication
+- PostgreSQL
+- WebSockets/STOMP
+- Docker & Containerization
+- JWT Security
+- Distributed System Design
+
+## Vision
+
+Amber IoT Platform aims to provide a scalable, secure, and real-time backend ecosystem for smart devices including air conditioners, air purifiers, and future connected appliances.
+
+The platform is designed with a microservices-first architecture to support rapid feature development, independent service scaling, and large-scale device connectivity.

@@ -25,9 +25,9 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         config.setModelId(request.getModelId());
         config.setConfiguration(request.getConfiguration());
 
-        ModelConfigEntity savedConfig =repository.save(config);
+        repository.save(config);
 
-        return ApiResponse.success("Configuration saved successfully",savedConfig);
+        return ApiResponse.success("Configuration saved successfully", null);
     }
 
     @Override

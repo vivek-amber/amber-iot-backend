@@ -1,6 +1,7 @@
 package com.device.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -18,6 +19,8 @@ public class DeviceConfiguration {
 
     private List<ControlConflictRule> conflictRules;
 
-    private List<QuickActionDefinition> quickActions;
+    private List<String> quickActions;
+
+    private Map<String, Map<String, String>> valueMappings;
 
 }

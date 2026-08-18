@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.user.dto.LoginRequest;
+import com.user.dto.RefreshTokenRequest;
 import com.user.dto.RegisterRequest;
 import com.user.dto.ResendOtpRequest;
 import com.user.dto.ResetPasswordRequest;
@@ -59,9 +60,17 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
 
         return ResponseEntity.ok(authService.resetPassword(request));
+    }
+    
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> refreshToken(
+            @RequestBody RefreshTokenRequest request) {
+                
+        return ResponseEntity.ok(authService.refreshToken(request));
     }
     
 }

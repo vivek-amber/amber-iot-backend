@@ -40,6 +40,9 @@ public class DeviceEntity {
     @Column(nullable = false)
     private String modelId;
 
+    // @Column(nullable = false)
+    private String firmwareVersion="1.0.0";
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant registeredAt;

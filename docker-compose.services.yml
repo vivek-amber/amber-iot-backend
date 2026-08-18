@@ -1,7 +1,7 @@
 
 
 services:
-  
+
   bridge:
     build:
       context: ./bridge
@@ -18,4 +18,13 @@ services:
     container_name: user
     ports:
       - "8082:8082"
+    restart: unless-stopped
+
+  device:
+    build:
+      context: ./device
+      dockerfile: Dockerfile
+    container_name: device
+    ports:
+      - "8083:8083"
     restart: unless-stopped

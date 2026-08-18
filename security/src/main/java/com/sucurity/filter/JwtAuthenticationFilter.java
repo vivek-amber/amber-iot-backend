@@ -29,7 +29,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-                
+
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/user/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader(SecurityConstants.AUTH_HEADER);
 
         if (authHeader == null || !authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
@@ -39,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+
         try {
             jwtUtil.validateToken(token);
         } catch (InvalidTokenException ex) {

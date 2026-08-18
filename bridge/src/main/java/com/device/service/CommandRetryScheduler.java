@@ -48,7 +48,7 @@ public class CommandRetryScheduler {
             // Max retry reached
             if (command.getRetryCount() >= command.getMaxRetry()) {
 
-                redisService.deletePendingCommand(command.getDeviceId(), command.getCmi());
+                redisService.deletePendingCommand(command.getDeviceId(),command.getCmd()              );
                 continue;
             }
 
@@ -61,7 +61,7 @@ public class CommandRetryScheduler {
         
             command.setSentAt(System.currentTimeMillis());
         
-            redisService.updatePendingCommand(command.getDeviceId(),command);
+            redisService.updatePendingCommand(command.getDeviceId(),command.getCmd(),command);
 
         }
     }

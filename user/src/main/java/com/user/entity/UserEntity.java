@@ -82,6 +82,10 @@ public class UserEntity {
     @Builder.Default
     private Boolean active = true;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer tokenVersion = 1;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

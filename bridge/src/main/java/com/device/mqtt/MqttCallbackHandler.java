@@ -5,11 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.stereotype.Component;
 
-import com.device.dto.CommandResponse;
-import com.device.dto.PendingCommand;
-import com.device.helpers.TopicFormatter;
 import com.device.service.RedisService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
