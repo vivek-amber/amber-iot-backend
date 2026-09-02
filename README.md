@@ -40,6 +40,7 @@ Built with Spring Boot Microservices, MQTT, PostgreSQL, WebSockets, Docker, and 
 - User Service
 - Bridge Service
 - Device Service
+- Automation Service
 - API Gateway
 - Service Registry
 
@@ -158,7 +159,10 @@ Responsible for IoT communication.
 Features:
 
 - MQTT communication
-- Device command processing
+- Backend-driven device command processing
+- Command acknowledgement and retry handling
+- Device shadow and state persistence with Redis
+- Kafka event consumption
 - Telemetry routing
 - Real-time updates
 
@@ -192,6 +196,21 @@ Features:
 - Device status tracking
 - Feature-based command support
 - Device metadata management
+
+---
+
+### Automation Service
+
+Manages backend-driven scenes and scheduled device actions.
+
+**Port:** `8084`
+
+Features:
+
+- Scene creation, update, execution, and deletion
+- Schedule creation, update, enable/disable, and deletion
+- Kafka-based command publishing
+- Quartz-backed scheduled execution
 
 ---
 ## Security Features
@@ -237,20 +256,32 @@ Features:
 
 ✅ Redis Integration
 
+✅ Backend-Driven Device Controls
+
+✅ Device Shadow and Command Acknowledgements
+
+✅ Kafka Messaging Infrastructure
+
+✅ Automation Service (Scenes and Schedules)
+
+✅ Notification APIs (Read, Unread, and Mark as Read)
+
+✅ Device Management APIs
+
 ---
 
 ### In Progress
 
-🚧 Device Management APIs
 🚧 Role-Based Access Control (RBAC)
 
 ---
 
 ### Planned
 
-📌 Notification Service
 📌 Device Provisioning
+
 📌 Monitoring & Analytics Dashboard
+
 📌 OTA Update Support
 
 ---
@@ -270,6 +301,8 @@ BACKEND_MICROSERVICE
 │
 ├── device
 │
+├── automation
+│
 ├── security
 │
 ├── docker-compose.services.yml
@@ -285,6 +318,9 @@ BACKEND_MICROSERVICE
 - Service discovery using Eureka Registry
 - Stateless authentication with JWT
 - MQTT-based low-latency device communication
+- Kafka event-driven automation and command delivery
+- Redis-backed device state and shadow data
+- Backend-controlled scenes and schedules
 - WebSocket support for real-time updates
 - Independent service deployment and scaling
 - Containerized infrastructure using Docker
@@ -300,9 +336,11 @@ Docker Containers
 ├── User Service
 ├── Bridge Service
 ├── Device Service
+├── Automation Service
 ├── PostgreSQL
 ├── Redis
-└── MQTT Broker
+├── Kafka
+└── MQTT Broker (external HiveMQ configuration)
 ```
 
 
@@ -316,6 +354,8 @@ Docker Containers
 - Docker Compose
 - PostgreSQL
 - Redis
+- Kafka
+- An MQTT broker configured in the Bridge service
 
 ---
 
@@ -349,6 +389,21 @@ docker compose -f docker-compose.services.yml build user
 docker compose -f docker-compose.services.yml up -d
 ```
 
+Start the registry and gateway separately:
+
+```bash
+docker compose -f docker-compose.routes.yml up -d
+```
+
+The services compose file currently starts User, Device, Bridge, Automation,
+Kafka, and Redis. The routes compose file starts Registry and Gateway.
+
+To rebuild and start only the Bridge service with its dependencies:
+
+```bash
+docker compose -f docker-compose.services.yml up -d --build bridge
+```
+
 ---
 
 ### Check Running Containers
@@ -368,6 +423,11 @@ docker ps
 | Bridge | 8081 |
 | User | 8082 |
 | Device | 8083 |
+| Automation | 8084 |
+| Kafka | 9092 |
+| Redis | 6379 |
+
+Registry and Gateway are started from `docker-compose.routes.yml`.
 
 ---
 
@@ -391,6 +451,35 @@ JWT Token Issued
       ▼
 Protected APIs
 ```
+
+## Backend-Driven Control Flow
+
+```text
+Client
+  |
+  v
+API Gateway
+  |
+  v
+Automation Service -- publishes commands --> Kafka
+                                             |
+                                             v
+                                       Bridge Service
+                                             |
+                                             v
+                                        MQTT Device
+                                             |
+                                             v
+                                  Acknowledgement / Shadow
+                                             |
+                                             v
+                                           Redis
+```
+
+Scenes and schedules are managed through the Automation Service. Commands are
+published to Kafka, consumed by the Bridge Service, and delivered to devices
+over MQTT. The Bridge tracks command acknowledgements and maintains device
+state in Redis.
 
 ---
 

@@ -24,6 +24,7 @@ public class MqttPublisher {
             }
 
             mqttClient.publish(topic, payload.getBytes(), 1, false);
+            
             log.debug("Published topic : {} payload : {}", topic, payload);
             
             

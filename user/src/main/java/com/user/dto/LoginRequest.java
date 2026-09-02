@@ -16,7 +16,10 @@ public record LoginRequest(
     @Size(min = 8, max = 50)
     String password,
     
-    String deviceName
+    String deviceName,
+    
+    @NotBlank(message="Device is required")@Size(min=8,max=50)
+    String deviceId
     
 ) {
 }

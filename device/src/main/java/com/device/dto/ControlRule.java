@@ -7,9 +7,11 @@ import java.util.Map;
 import lombok.Data;
 
 @Data
-public class ModeRule {
+public class ControlRule {
 
-    private String mode;
+    private String control;
+
+    private String value;
 
     private List<String> disabledControls;
 

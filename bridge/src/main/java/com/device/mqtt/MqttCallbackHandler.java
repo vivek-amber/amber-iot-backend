@@ -5,7 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.stereotype.Component;
 
-import com.device.service.RedisService;
+import com.device.router.MqttMessageRouter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MqttCallbackHandler implements MqttCallback {
 
-    private final RedisService redisService;
+    private final MqttMessageRouter router;
+
 
     @Override
     public void connectionLost(Throwable cause) {
@@ -28,12 +29,7 @@ public class MqttCallbackHandler implements MqttCallback {
 
         String payload = new String(message.getPayload());
 
-        if (topic.endsWith("/ack")) {
-            
-            redisService.processAck(topic, payload);
-
-            return;
-        }
+        router.route(topic, payload);
 
         log.info("Topic : {}",topic);
         log.info("Message : {}",payload);

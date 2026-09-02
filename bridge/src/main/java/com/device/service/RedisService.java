@@ -7,9 +7,7 @@ import java.util.Set;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.device.dto.CommandResponse;
 import com.device.dto.PendingCommand;
-import com.device.helpers.TopicFormatter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -118,34 +116,32 @@ public class RedisService {
     }
 }
     
-    public void processAck(String topic, String payload) {
 
-        try {
-    
-            CommandResponse response =objectMapper.readValue(payload,CommandResponse.class);
-    
-            String deviceId =TopicFormatter.extractDeviceId(topic);
-    
-            PendingCommand pending = getPendingCommand(
-                    deviceId,
-                    response.getCmd());
+public <T> void save(String key, T value) {
 
-            if (pending == null) {
-                return;
-            }
-
-            if (!pending.getCmi().equals(response.getCmi())) {
-                return;
-            }
-
-            if ("SUCCESS".equals(response.getSts())) {
-
-                deletePendingCommand(deviceId,response.getCmd());
-            }
-    
-        } catch (JsonProcessingException e) {
-    
-            log.error( "Failed to parse ACK payload. Topic={}, Payload={}",topic,payload,e);
-        }
+    try {
+        
+        redisTemplate.opsForValue()
+        .set(key, objectMapper.writeValueAsString(value));
+    } catch (Exception e) {
+        throw new RuntimeException(e);
     }
+}
+
+public <T> T get(String key, Class<T> clazz) {
+
+    try {
+        
+        String value = redisTemplate.opsForValue().get(key);
+
+        if (value == null) {
+            return null;
+        }
+
+        return objectMapper.readValue(value, clazz);
+
+    } catch (Exception e) {
+        throw new RuntimeException("Failed to deserialize redis value",e);
+    }
+}
 }

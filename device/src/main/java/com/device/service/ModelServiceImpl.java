@@ -1,9 +1,12 @@
 package com.device.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.device.dto.CreateModelRequest;
 import com.device.entity.ModelEntity;
+import com.device.exception.ModelAlreadyExistsException;
 import com.device.exception.ModelNotFoundException;
 import com.device.helper.ApiResponse;
 import com.device.repository.ModelRepository;
@@ -19,9 +22,13 @@ public class ModelServiceImpl implements ModelService {
     @Override
     public ApiResponse<ModelEntity> createModel(CreateModelRequest request) {
 
+        Optional<ModelEntity> exists = modelRepository.findById(request.getId());
+
+        if (exists.isPresent()) {
+            throw new ModelAlreadyExistsException("Model with this ID already exists.");
+        }
         
         ModelEntity model = new ModelEntity();
-        
         model.setId(request.getId());
         model.setModelName(request.getModelName());
         model.setDeviceType(request.getDeviceType());

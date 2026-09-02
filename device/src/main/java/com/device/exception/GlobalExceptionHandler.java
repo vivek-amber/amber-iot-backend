@@ -30,6 +30,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(ModelAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Map<Object, Object>>> handleModelNotFound(ModelAlreadyExistsException ex) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Map<Object, Object>>> handleGenericException(Exception ex) {
         

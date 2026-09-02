@@ -25,4 +25,10 @@ public final class TopicFormatter {
         return parts[3];
     }
 
+    public static String extractCompanyId(String topic) {
+
+        String[] parts = topic.split("/");
+
+        return parts[1];
+    }
 }

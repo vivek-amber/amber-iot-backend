@@ -12,10 +12,7 @@ public class DeviceConfiguration {
     @NotNull(message="Controlls are required")
     private List<ControlDefinition> controls;
 
-    @NotNull(message="Modes are required")
-    private List<ModeDefinition> modes;
-
-    private List<ModeRule> modeRules;
+    private List<ControlRule> controlRules;
 
     private List<ControlConflictRule> conflictRules;
 

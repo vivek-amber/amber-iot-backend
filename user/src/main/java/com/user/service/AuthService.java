@@ -121,14 +121,21 @@ public class AuthService {
                 throw new WrongUsernamePasswordException("Wrong password");
         }
 
-        String sessionId = UUID.randomUUID().toString();
-
-        UserSessionEntity session = UserSessionEntity.builder()
-                        .id(sessionId)
+        UserSessionEntity session = sessionRepository
+        .findByUserIdAndDeviceId(
+                user.getId(),
+                request.deviceId())
+        .orElseGet(() ->
+                UserSessionEntity.builder()
+                        .id(UUID.randomUUID().toString())
                         .userId(user.getId())
+                        .deviceId(request.deviceId())
                         .active(true)
-                        .build();
+                                        .build());
 
+
+        session.setActive(true);
+        
         if (request.deviceName() != null && !request.deviceName().isBlank()) {
                 session.setDeviceName(request.deviceName());
         }
