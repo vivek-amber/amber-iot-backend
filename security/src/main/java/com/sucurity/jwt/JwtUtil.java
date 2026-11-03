@@ -13,6 +13,7 @@ import com.sucurity.model.AuthUser;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -37,19 +38,23 @@ public class JwtUtil {
 
         Date expiryDate = new Date(now.getTime() + accessExpiration);
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .setSubject(user.userId())
                 .claim(SecurityConstants.COMPANY_ID, user.companyId())
                 .claim(SecurityConstants.ROLES, user.roles())
-                .claim("sessionId", sessionId)
                 .claim("tokenVersion", tokenVersion)
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setExpiration(expiryDate);
+
+        if (sessionId != null) {
+            builder.claim("sessionId", sessionId);
+        }
+
+        return builder
                 .signWith(
-                        Keys.hmacShaKeyFor(
-                                secret.getBytes(StandardCharsets.UTF_8)),
-                        SignatureAlgorithm.HS256)
-                .compact();
+                Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)),
+                SignatureAlgorithm.HS256)
+        .compact();
     }
 
     public String generateRefreshToken(String userId, String sessionId) {
@@ -58,14 +63,18 @@ public class JwtUtil {
 
         Date expiryDate = new Date(now.getTime() + refreshExpiration);
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .setSubject(userId)
-                .claim("sessionId", sessionId)
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setExpiration(expiryDate);
+
+        if (sessionId != null) {
+            builder.claim("sessionId", sessionId);
+        }
+
+        return builder
                 .signWith(
-                    Keys.hmacShaKeyFor(
-                                secret.getBytes(StandardCharsets.UTF_8)),
+                        Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)),
                         SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -126,5 +135,9 @@ public class JwtUtil {
     public String getSessionId(String token) {
 
         return getClaims(token).get("sessionId", String.class);
+    }
+
+    public String getUserId(String token) {
+        return getClaims(token).getSubject();
     }
 }

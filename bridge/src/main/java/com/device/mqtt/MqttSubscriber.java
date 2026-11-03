@@ -31,7 +31,6 @@ public class MqttSubscriber {
         } catch (Exception e) {
 
             log.error("Mqtt Subscription Failed", e);
-            throw new MqttSubscribeException("Mqtt Subscription Failed", e);
         }
     }
 }

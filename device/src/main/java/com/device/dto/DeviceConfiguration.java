@@ -12,6 +12,8 @@ public class DeviceConfiguration {
     @NotNull(message="Controlls are required")
     private List<ControlDefinition> controls;
 
+    private List<ControlDefinition> advancedControls;
+
     private List<ControlRule> controlRules;
 
     private List<ControlConflictRule> conflictRules;

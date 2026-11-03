@@ -1,5 +1,6 @@
 package com.user.service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -10,6 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import java.lang.RuntimeException;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ import com.user.dto.RegisterRequest;
 import com.user.dto.ResendOtpRequest;
 import com.user.dto.ResetPasswordRequest;
 import com.user.dto.VerifyEmailRequest;
+import com.user.dto.WebLoginRequest;
 import com.user.entity.UserEntity;
 import com.user.entity.UserSessionEntity;
 import com.user.entity.VerificationOtpEntity;
@@ -32,6 +36,7 @@ import com.user.mapper.UserMapper;
 import com.user.repository.EmailVerificationRepository;
 import com.user.repository.SessionRepository;
 import com.user.repository.UserRepository;
+import com.sucurity.constants.SecurityConstants;
 import com.sucurity.context.SecurityContextUtil;
 import com.sucurity.exception.InvalidTokenException;
 import com.sucurity.jwt.JwtUtil;
@@ -41,6 +46,9 @@ import com.user.exception.EmailNotVerifiedException;
 import com.user.exception.InvalidOtpException;
 import com.user.exception.OtpExpiredException;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,66 +115,119 @@ public class AuthService {
     
     public ApiResponse<Map<String, Object>> loginUser(LoginRequest request) {
 
-        UserEntity user = userRepository.findByEmailAndCompanyId(request.email(), request.companyId())
-                .orElseThrow(() -> new UserNotExistException("User with this email do not exists."));
+            UserEntity user = userRepository.findByEmailAndCompanyId(request.email(), request.companyId())
+                            .orElseThrow(() -> new UserNotExistException("User with this email do not exists."));
 
-        if (!user.getEmailVerified()) {
-                throw new EmailNotVerifiedException("Email for this account not verified.");
-        }
+            if (!user.getEmailVerified()) {
+                    throw new EmailNotVerifiedException("Email for this account not verified.");
+            }
 
-        boolean isPasswordCorrect = passwordEncoder.matches(request.password(), user.getPassword());
+            boolean isPasswordCorrect = passwordEncoder.matches(request.password(), user.getPassword());
 
-        if (!isPasswordCorrect) {
+            if (!isPasswordCorrect) {
 
-                throw new WrongUsernamePasswordException("Wrong password");
-        }
+                    throw new WrongUsernamePasswordException("Wrong password");
+            }
 
-        UserSessionEntity session = sessionRepository
-        .findByUserIdAndDeviceId(
-                user.getId(),
-                request.deviceId())
-        .orElseGet(() ->
-                UserSessionEntity.builder()
-                        .id(UUID.randomUUID().toString())
-                        .userId(user.getId())
-                        .deviceId(request.deviceId())
-                        .active(true)
-                                        .build());
+            UserSessionEntity session = sessionRepository
+                            .findByUserIdAndDeviceId(
+                                            user.getId(),
+                                            request.deviceId())
+                            .orElseGet(() -> UserSessionEntity.builder()
+                                            .id(UUID.randomUUID().toString())
+                                            .userId(user.getId())
+                                            .deviceId(request.deviceId())
+                                            .active(true)
+                                            .build());
 
+            session.setActive(true);
 
-        session.setActive(true);
-        
-        if (request.deviceName() != null && !request.deviceName().isBlank()) {
-                session.setDeviceName(request.deviceName());
-        }
+            if (request.deviceName() != null && !request.deviceName().isBlank()) {
+                    session.setDeviceName(request.deviceName());
+            }
 
-        String refreshToken = jwtUtil.generateRefreshToken(
-                        user.getId(),
-                        session.getId());
+            String refreshToken = jwtUtil.generateRefreshToken(
+                            user.getId(),
+                            session.getId());
 
-        String refreshTokenFingerprint = HashUtil.sha256(refreshToken);
-        session.setRefreshTokenHash(
-                        passwordEncoder.encode(refreshTokenFingerprint));
+            String refreshTokenFingerprint = HashUtil.sha256(refreshToken);
+            session.setRefreshTokenHash(
+                            passwordEncoder.encode(refreshTokenFingerprint));
 
-        sessionRepository.save(session);
+            sessionRepository.save(session);
 
-        AuthUser authUser = new AuthUser(
-                        user.getId(),
-                        user.getCompanyId(),
-                        user.getRoles(),
-                        session.getId(),
-                        user.getTokenVersion());
+            AuthUser authUser = new AuthUser(
+                            user.getId(),
+                            user.getCompanyId(),
+                            user.getRoles(),
+                            session.getId(),
+                            user.getTokenVersion());
 
-        String accessToken = jwtUtil.generateAccessToken(
-                        authUser,
-                        session.getId(),
-                        user.getTokenVersion());
+            String accessToken = jwtUtil.generateAccessToken(
+                            authUser,
+                            session.getId(),
+                            user.getTokenVersion());
 
-        Map<String, Object> data = Map.of(
-                        "accessToken", accessToken,
-                        "refreshToken", refreshToken);
+            Map<String, Object> data = Map.of(
+                            "accessToken", accessToken,
+                            "refreshToken", refreshToken);
 
-        return ApiResponse.success("Login successful", data);
+            return ApiResponse.success("Login successful", data);
+
+    }
+
+    public ApiResponse<Map<Object, Object>> loginWebUser(WebLoginRequest request, HttpServletResponse response) {
+
+            UserEntity user = userRepository.findByEmail(request.email())
+                            .orElseThrow(() -> new UserNotExistException("User with this email do not exists."));
+
+            boolean isPasswordCorrect = passwordEncoder.matches(request.password(), user.getPassword());
+
+            if (!isPasswordCorrect) {
+
+                    throw new WrongUsernamePasswordException("Wrong password");
+            }
+
+            String refreshToken = jwtUtil.generateRefreshToken(
+                            user.getId(),
+                            null);
+
+            AuthUser authUser = new AuthUser(
+                            user.getId(),
+                            user.getCompanyId(),
+                            user.getRoles(),
+                            null,
+                            user.getTokenVersion());
+
+            String accessToken = jwtUtil.generateAccessToken(
+                            authUser,
+                            null,
+                            user.getTokenVersion());
+
+            ResponseCookie accessCookie = ResponseCookie
+                            .from(SecurityConstants.ACCESS_TOKEN, accessToken)
+                            .httpOnly(true)
+                            .secure(true) // false locally as using http
+                            .sameSite("None")
+                            .path("/")
+                            .maxAge(Duration.ofMinutes(15))
+                            .build();
+            ResponseCookie refreshCookie = ResponseCookie
+                            .from(SecurityConstants.REFRESH_TOKEN, refreshToken)
+                            .httpOnly(true)
+                            .secure(true) // false locally as using http
+                            .sameSite("None")
+                            .path("/")
+                            .maxAge(Duration.ofDays(30))
+                            .build();
+
+            response.addHeader(
+                            HttpHeaders.SET_COOKIE,
+                            accessCookie.toString());
+            response.addHeader(
+                            HttpHeaders.SET_COOKIE,
+                            refreshCookie.toString());
+            return ApiResponse.success("Login successful", Collections.emptyMap());
 
     }
 
@@ -372,6 +433,79 @@ public class AuthService {
             return ApiResponse.success(
                             "Token refreshed successfully",
                             data);
+    }
+
+    public ApiResponse<Map<String, Object>> refreshWebToken(HttpServletRequest request, HttpServletResponse response) {
+
+            String refreshToken = null;
+
+            if (request.getCookies() != null) {
+                    for (Cookie cookie : request.getCookies()) {
+
+                            if (SecurityConstants.REFRESH_TOKEN
+                                            .equals(cookie.getName())) {
+
+                                    refreshToken = cookie.getValue();
+                                    break;
+                            }
+                    }
+            }
+
+            if (refreshToken == null) {
+                    throw new InvalidTokenException(
+                                    "Refresh token missing");
+            }
+            
+            jwtUtil.validateToken(refreshToken);
+
+            String userId = jwtUtil.getUserId(refreshToken);
+            
+            UserEntity user = userRepository.findById(
+                            userId)
+                            .orElseThrow(() -> new UserNotExistException(
+                                            "User not found"));
+
+            AuthUser authUser = new AuthUser(
+                            user.getId(),
+                            user.getCompanyId(),
+                            user.getRoles(),
+                            null,
+                            user.getTokenVersion());
+
+            String newRefreshToken = jwtUtil.generateRefreshToken(
+                            user.getId(),
+                            null);
+
+
+            String newAccessToken = jwtUtil.generateAccessToken(
+                                authUser,
+                            null,
+                            user.getTokenVersion());
+
+                            ResponseCookie accessCookie = ResponseCookie
+                            .from(SecurityConstants.ACCESS_TOKEN, newAccessToken)
+                            .httpOnly(true)
+                            .secure(true) // false locally as using http
+                            .sameSite("None")
+                            .path("/")
+                            .maxAge(Duration.ofMinutes(15))
+                            .build();
+            ResponseCookie refreshCookie = ResponseCookie
+                            .from(SecurityConstants.REFRESH_TOKEN, newRefreshToken)
+                            .httpOnly(true)
+                            .secure(true) // false locally as using http
+                            .sameSite("None")
+                            .path("/")
+                            .maxAge(Duration.ofDays(30))
+                            .build();
+
+            response.addHeader(
+                            HttpHeaders.SET_COOKIE,
+                            accessCookie.toString());
+            response.addHeader(
+                            HttpHeaders.SET_COOKIE,
+                            refreshCookie.toString());
+            return ApiResponse.success("Token refreshed successfully", Collections.emptyMap());
     }
 
     public ApiResponse<Map<Object, Object>> logout() {

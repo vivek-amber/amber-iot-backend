@@ -5,6 +5,7 @@ import java.time.Instant;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ public class EmailService {
     private final EmailVerificationRepository emailVerificationRepository;
      
 
+    @Async 
     public void sendOtp(String email, String otp) {
 
         SimpleMailMessage message = new SimpleMailMessage();

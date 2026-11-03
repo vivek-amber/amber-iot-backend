@@ -1,6 +1,4 @@
 package com.device.helpers;
-
-
 import com.device.constants.MqttTopics;
 
 public final class TopicFormatter {
@@ -14,6 +12,17 @@ public final class TopicFormatter {
 
         return String.format(
                 MqttTopics.DEVICE_COMMAND,
+                companyId,
+                deviceId);
+    }
+    
+  // For Testing only
+    public static String ackTopic(
+            String companyId,
+            String deviceId) {
+
+        return String.format(
+                "company/%s/device/%s/ack",
                 companyId,
                 deviceId);
     }

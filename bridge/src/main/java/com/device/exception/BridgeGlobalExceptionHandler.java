@@ -1,3 +1,15 @@
+/*
+ * @@file: 
+ * @@brief: 
+ * @@author: Vivek
+ * @@date: 
+ */
+/*
+ * @@file: 
+ * @@brief: 
+ * @@author: Vivek
+ * @@date: 
+ */
 package com.device.exception;
 
 import org.springframework.http.HttpStatus;
@@ -11,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class BridgeGlobalExceptionHandler {
 
         @ExceptionHandler(MqttPublishException.class)
         public ResponseEntity<ApiResponse<Void>> handleMqttPublishException(

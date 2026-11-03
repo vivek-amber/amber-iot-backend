@@ -82,8 +82,20 @@
     		<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 		<dependency>
+    		<groupId>com.google.protobuf</groupId>
+    		<artifactId>protobuf-java</artifactId>
+    		<version>4.31.1</version>
+		</dependency>
+		<dependency>
     		<groupId>org.apache.commons</groupId>
     		<artifactId>commons-pool2</artifactId>
+		</dependency>
+
+		<!-- Shared Security -->
+		<dependency>
+    		<groupId>com.amber.security</groupId>
+    		<artifactId>shared-security</artifactId>
+    		<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
@@ -99,7 +111,35 @@
 	</dependencyManagement>
 
 	<build>
+    <extensions>
+        <extension>
+            <groupId>kr.motd.maven</groupId>
+            <artifactId>os-maven-plugin</artifactId>
+            <version>1.7.1</version>
+        </extension>
+    </extensions>
+
 		<plugins>
+		<plugin>
+            <groupId>org.xolstice.maven.plugins</groupId>
+            <artifactId>protobuf-maven-plugin</artifactId>
+            <version>0.6.1</version>
+
+            <configuration>
+                <protocArtifact>
+                    com.google.protobuf:protoc:4.31.1:exe:${os.detected.classifier}
+                </protocArtifact>
+            </configuration>
+
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+
+        </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

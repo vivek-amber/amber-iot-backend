@@ -15,9 +15,12 @@ import com.user.dto.RegisterRequest;
 import com.user.dto.ResendOtpRequest;
 import com.user.dto.ResetPasswordRequest;
 import com.user.dto.VerifyEmailRequest;
+import com.user.dto.WebLoginRequest;
 import com.user.helper.ApiResponse;
 import com.user.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -46,6 +49,13 @@ public class AuthController {
 
         return ResponseEntity.ok().body(authService.loginUser(request));
     }
+
+    @PostMapping("/login/web")
+    public ResponseEntity<ApiResponse<Map<Object, Object>>> loginWebUser(@Valid @RequestBody WebLoginRequest request,
+            HttpServletResponse response) {
+
+        return ResponseEntity.ok().body(authService.loginWebUser(request,response));
+    }
     
     @PostMapping("/resend-verification-otp")
     public ResponseEntity<ApiResponse<Map<String, Object>>> resendVerificationOtp(@Valid @RequestBody ResendOtpRequest request) {
@@ -71,6 +81,12 @@ public class AuthController {
             @RequestBody RefreshTokenRequest request) {
                 
         return ResponseEntity.ok(authService.refreshToken(request));
+    }
+    @PostMapping("/refresh/web")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> refreshWebToken(
+            HttpServletRequest request, HttpServletResponse response) {
+                
+        return ResponseEntity.ok(authService.refreshWebToken(request,response));
     }
     
 }

@@ -1,6 +1,7 @@
 package com.device.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,6 @@ public class CommandDto {
     @NotBlank(message="Command is required")
     private String cmd;
 
-    @NotBlank(message="Value is required to send Command")
-    private String val;
+    @NotNull(message="Value is required to send Command")
+    private Integer val;
 }

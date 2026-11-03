@@ -3,12 +3,12 @@ package com.device.service;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.device.dto.AckEvent;
-import com.device.dto.CommandResponse;
+import com.device.dto.CommandResultDto;
 import com.device.dto.DeviceShadow;
 import com.device.dto.PendingCommand;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.device.enums.CommandStatus;
+import com.device.proto.DeviceAck;
+
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class AcknowledgeService {
-
-    private final ObjectMapper objectMapper;
 
     private final RedisService redisService;
 
@@ -29,54 +27,52 @@ public class AcknowledgeService {
     private final SimpMessagingTemplate messagingTemplate;
 
 
-    public void processAck(String companyId, String deviceId, String payload) {
+    public void processAck(String companyId, String deviceId, DeviceAck ack) {
 
         try {
 
-            CommandResponse response = objectMapper.readValue(payload, CommandResponse.class);
-
             PendingCommand pending = redisService.getPendingCommand(
                     deviceId,
-                    response.getCmd());
+                    ack.getCmd());
 
             if (pending == null) {
                 return;
             }
 
-            if (!pending.getCmi().equals(response.getCmi())) {
+            if (!pending.getCmi().equals(ack.getCmi())) {
                 return;
             }
 
-            if ("SUCCESS".equals(response.getSts())) {
-
+            if (Boolean.TRUE.equals(ack.getSts())) {
                 shadowService.updateReportedState(
                         deviceId,
                         pending.getCompanyId(),
-                        response.getCmd(),
-                        response.getVal(),
-                        response.getVrs()
-                );
+                        ack.getCmd(),
+                        ack.getVal(),
+                        ack.getVrs());
 
                 DeviceShadow shadow = shadowService.getShadow(deviceId, pending.getCompanyId());
 
                 if (shadow != null) {
-                    
+
                     deviceStateService.save(shadow);
-                    messagingTemplate.convertAndSend(
-                        "/topic/device/"+deviceId+"/ack",
-                            new AckEvent(
-                            deviceId,
-                             response.getCmd(),
-                            response.getVal()   
-                        )
-                    );
+
+                    CommandResultDto res = CommandResultDto.builder()
+                    .deviceId(deviceId)
+                    .cmd(ack.getCmd())
+                    .value(ack.getVal())
+                    .status(CommandStatus.SUCCESS)
+                    .build();
+                    
+                    messagingTemplate.convertAndSend("/topic/company/" + companyId + "/device/" + deviceId + "/ack", res);
                 }
-                redisService.deletePendingCommand(deviceId, response.getCmd());
+                redisService.deletePendingCommand(deviceId, ack.getCmd());
             }
 
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
 
-            log.error("Failed to parse ACK payload. Device={}, Payload={}", deviceId, payload, e);
+            log.error("Failed to parse ACK payload. Device={}, Payload={}", deviceId, e);
         }
     }
+    
 }

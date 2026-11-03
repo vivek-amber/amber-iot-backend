@@ -14,4 +14,6 @@ public class SaveModelConfigRequest {
     @NotNull(message = "Configuration is required")
     @Valid
     private DeviceConfiguration configuration;
+
+    private String errorId;
 }

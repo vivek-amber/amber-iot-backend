@@ -40,45 +40,49 @@ public class MqttConfig {
     MqttClient mqttClient() throws Exception {
 
         try {
-        
-        MqttConnectOptions connectOptions = new MqttConnectOptions();
 
-        connectOptions.setAutomaticReconnect(true);
-        connectOptions.setCleanSession(true);
-        connectOptions.setConnectionTimeout(60);
-        connectOptions.setKeepAliveInterval(60);
+            MqttConnectOptions connectOptions = new MqttConnectOptions();
 
-        if (userName != null && !userName.isBlank()) {
-            connectOptions.setUserName(userName);
+            connectOptions.setAutomaticReconnect(true);
+            connectOptions.setCleanSession(true);
+            connectOptions.setConnectionTimeout(60);
+            connectOptions.setKeepAliveInterval(60);
+
+            if (userName != null && !userName.isBlank()) {
+                connectOptions.setUserName(userName);
+            }
+
+            if (password != null && !password.isBlank()) {
+                connectOptions.setPassword(password.toCharArray());
+            }
+
+            String dynamicClientId = clientId + "-" + UUID.randomUUID();
+
+            log.info("Broker: {}", brokerUrl);
+            log.info("ClientId: {}", clientId);
+            log.info("Username: {}", userName);
+            mqttClient = new MqttClient(brokerUrl, dynamicClientId, new MemoryPersistence());
+            mqttClient.setCallback(callbackHandler);
+            mqttClient.connect(connectOptions);
+
+            log.info("MQTT Connected Successfully");
+
+            return mqttClient;
+
+        } catch (Exception e) {
+            log.error("MQTT unavailable", e);
         }
-
-        if (password != null && !password.isBlank()) {
-            connectOptions.setPassword(password.toCharArray());
-        }
-
-        String dynamicClientId = clientId + "-" + UUID.randomUUID();
-
-        mqttClient = new MqttClient(brokerUrl, dynamicClientId, new MemoryPersistence());
-        mqttClient.setCallback(callbackHandler);
-        mqttClient.connect(connectOptions);
-
-        log.info("MQTT Connected Successfully");
 
         return mqttClient;
-
-    } catch (Exception e) {
-        log.error("Failed to connect MQTT", e);
-        throw new RuntimeException("Failed to connect MQTT Broker", e);
-      }
     }
-    
+
     @PreDestroy
     public void shutdownMqtt() {
-        
+
         try {
-            
+
             if (mqttClient != null) {
-                
+
                 if (mqttClient.isConnected()) {
 
                     log.info("Disconnecting MQTT...");
@@ -90,7 +94,7 @@ public class MqttConfig {
                 log.info("MQTT Client Closed");
             }
         } catch (Exception e) {
-            log.error("Error while closing MQTT",e);
+            log.error("Error while closing MQTT", e);
             e.printStackTrace();
         }
     }

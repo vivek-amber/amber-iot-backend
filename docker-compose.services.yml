@@ -4,11 +4,13 @@ services:
 
   bridge:
     build:
-      context: ./bridge
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: bridge/Dockerfile
     depends_on:
       - kafka
       - redis
+      - emqx
+      - db
     hostname: bridge
     container_name: bridge
     ports:
@@ -19,6 +21,8 @@ services:
     build:
       context: .
       dockerfile: user/Dockerfile
+    depends_on:
+      - db
     container_name: user
     ports:
       - "8082:8082"
@@ -26,8 +30,10 @@ services:
 
   device:
     build:
-      context: ./device
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: device/Dockerfile
+    depends_on:
+      - db
     container_name: device
     ports:
       - "8083:8083"
@@ -39,11 +45,22 @@ services:
       dockerfile: automation/Dockerfile
     depends_on:
       - kafka
+      - db
     container_name: automation
     ports:
       - "8084:8084"
     restart: unless-stopped
 
+  db:
+    image: postgres:latest
+    container_name: db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: mydb
+   
   kafka:
     image: apache/kafka:latest
     container_name: kafka
@@ -64,3 +81,13 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+  
+  emqx:
+    image: emqx/emqx:latest
+    container_name: emqx
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # MQTT
+      - "18083:18083" # Dashboard
+    environment:
+      - "EMQX_NAME=emqx"

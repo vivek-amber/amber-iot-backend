@@ -11,7 +11,7 @@ public class PendingCommand {
 
     private String cmd;
 
-    private Object val;
+    private Integer val;
 
     private Long sentAt;
 

@@ -2,14 +2,17 @@ package com.device.service;
 
 import java.util.Set;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.device.helpers.TopicFormatter;
-
+import com.device.dto.CommandResultDto;
 import com.device.dto.PendingCommand;
+import com.device.enums.CommandStatus;
 import com.device.helpers.DataFormatter;
 import com.device.mqtt.MqttPublisher;
+import com.device.proto.DeviceCommand;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +25,7 @@ public class CommandRetryScheduler {
 
     private final RedisService redisService;
     private final MqttPublisher mqttPublisher;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Scheduled(fixedDelay = RETRY_INTERVAL_MS)
     public void retryPendingCommands() {
@@ -48,12 +52,20 @@ public class CommandRetryScheduler {
             // Max retry reached
             if (command.getRetryCount() >= command.getMaxRetry()) {
 
-                redisService.deletePendingCommand(command.getDeviceId(),command.getCmd()              );
+                CommandResultDto res = CommandResultDto.builder()
+                    .deviceId(command.getDeviceId())
+                    .cmd(command.getCmd())
+                    .value(command.getVal())
+                    .status(CommandStatus.FAILED)
+                    .build();
+                    
+                    messagingTemplate.convertAndSend("/topic/company/" + command.getCompanyId() + "/device/"+ command.getDeviceId() + "/ack", res);
+                redisService.deletePendingCommand(command.getDeviceId(),command.getCmd());
                 continue;
             }
 
             String topic = TopicFormatter.commandTopic(command.getCompanyId(), command.getDeviceId());
-            String data = DataFormatter.commandValue(command.getCmi(), command.getVrs(), command.getCmd(), command.getVal());
+            DeviceCommand data = DataFormatter.commandValue(command.getCmi(), command.getVrs(), command.getCmd(), command.getVal());
 
             mqttPublisher.publish(topic, data);
             

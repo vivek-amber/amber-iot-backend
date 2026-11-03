@@ -22,17 +22,14 @@ public class MqttCallbackHandler implements MqttCallback {
     public void connectionLost(Throwable cause) {
        
         log.error("Mqtt Connection lost : ", cause);
+
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
 
-        String payload = new String(message.getPayload());
+        router.route(topic, message.getPayload());
 
-        router.route(topic, payload);
-
-        log.info("Topic : {}",topic);
-        log.info("Message : {}",payload);
     }
 
     @Override

@@ -3,7 +3,10 @@ package com.device.enums;
 public enum MqttTopicType {
 
     ACK("ack"),
-    STATUS("status");
+    STATUS("status"),
+    STATE("state"),
+    ERROR("error"),
+    CMD("cmd");
 
     private final String suffix;
 

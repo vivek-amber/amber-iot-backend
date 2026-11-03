@@ -1,14 +1,21 @@
 package com.device.helpers;
 
+import com.device.proto.DeviceCommand;
+
 public final class DataFormatter {
     
 
     private DataFormatter() {
     }
     
-    public static String commandValue(Long cmdId,Long version,String cmd,Object val) {
+    public static DeviceCommand commandValue(Long cmdId,Long version,String cmd,Integer val) {
 
-        return String.format("{\"cmi\":%d,\"vrs\":%d,\"cmd\":\"%s\",\"val\":\"%s\"}",
-            cmdId,version,cmd,val);
+        DeviceCommand.Builder builder = DeviceCommand.newBuilder()
+                .setCmi(cmdId)
+                .setVrs(version)
+                .setCmd(cmd)
+                .setVal(val);
+
+        return builder.build();
     }
 }

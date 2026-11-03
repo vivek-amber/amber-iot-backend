@@ -4,8 +4,12 @@ import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.device.enums.DeviceType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,6 +43,13 @@ public class DeviceEntity {
 
     @Column(nullable = false)
     private String modelId;
+
+    @Column(nullable = false)
+    private String companyId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DeviceType deviceType;
 
     // @Column(nullable = false)
     private String firmwareVersion="1.0.0";

@@ -8,11 +8,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.sucurity.constants.SecurityConstants;
 import com.sucurity.exception.InvalidTokenException;
 import com.sucurity.jwt.JwtUtil;
 import com.sucurity.model.AuthUser;
 import com.sucurity.model.SecurityPrincipal;
+import com.sucurity.utils.TokenExtractor;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,15 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String authHeader = request.getHeader(SecurityConstants.AUTH_HEADER);
+        String token = TokenExtractor.extract(request);
 
-        if (authHeader == null || !authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
-
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authHeader.substring(7);
 
         try {
             jwtUtil.validateToken(token);

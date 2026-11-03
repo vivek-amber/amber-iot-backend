@@ -9,6 +9,8 @@ import com.user.entity.UserEntity;
 
 public interface UserRepository  extends JpaRepository<UserEntity, String> {
 
+    Optional<UserEntity> findByEmail(String email);
+    
     Optional<UserEntity> findByEmailAndCompanyId(String email,String companyId);
 
     boolean existsByEmailAndCompanyId(String email,String companyId);

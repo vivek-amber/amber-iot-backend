@@ -73,12 +73,26 @@ public class ShadowService {
         save(shadow);
     }
 
-    public void syncFromDeviceState(String deviceId, String companyId, Map<String, ControlState> state) {
+    public void syncFromDeviceState(
+            String deviceId,
+            String companyId,
+            Map<String, ControlState> state) {
 
         DeviceShadow shadow = getOrCreate(deviceId, companyId);
 
-        shadow.setDesiredState(state);
-        shadow.setReportedState(state);
+        Map<String, ControlState> desired = shadow.getDesiredState() != null
+                ? new HashMap<>(shadow.getDesiredState())
+                : new HashMap<>();
+
+        Map<String, ControlState> reported = shadow.getReportedState() != null
+                ? new HashMap<>(shadow.getReportedState())
+                : new HashMap<>();
+
+        desired.putAll(state);
+        reported.putAll(state);
+
+        shadow.setDesiredState(desired);
+        shadow.setReportedState(reported);
 
         save(shadow);
     }

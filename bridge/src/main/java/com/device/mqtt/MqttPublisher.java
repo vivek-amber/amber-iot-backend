@@ -4,6 +4,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.springframework.stereotype.Service;
 
 import com.device.exception.MqttPublishException;
+import com.google.protobuf.Message;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,7 @@ public class MqttPublisher {
 
     private final MqttClient mqttClient;
 
-    public void publish(String topic, String payload) {
+    public void publish(String topic, Message payload) {
 
         try {
 
@@ -23,9 +24,7 @@ public class MqttPublisher {
                 throw new MqttPublishException("MQTT Client is disconnected");
             }
 
-            mqttClient.publish(topic, payload.getBytes(), 1, false);
-            
-            log.debug("Published topic : {} payload : {}", topic, payload);
+            mqttClient.publish(topic, payload.toByteArray(), 1, false);
             
             
         } catch (Exception e) {

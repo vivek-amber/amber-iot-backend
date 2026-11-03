@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.device.helper.ApiResponse;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class DeviceGlobalExceptionHandler {
     
     @ExceptionHandler(DeviceNotFoundException.class)
     public ResponseEntity<ApiResponse<Map<Object, Object>>> handleUserNotFound(DeviceNotFoundException ex) {
