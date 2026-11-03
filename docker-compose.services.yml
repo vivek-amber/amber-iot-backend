@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: bridge/Dockerfile
+    env_file:
+      - ./env/bridge.env
     depends_on:
       - kafka
       - redis
@@ -21,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: user/Dockerfile
+    env_file:
+      - ./env/user.env
     depends_on:
       - db
     container_name: user
@@ -32,6 +36,8 @@ services:
     build:
       context: .
       dockerfile: device/Dockerfile
+    env_file:
+      - ./env/device.env
     depends_on:
       - db
     container_name: device
@@ -43,6 +49,8 @@ services:
     build:
       context: .
       dockerfile: automation/Dockerfile
+    env_file:
+      - ./env/automation.env
     depends_on:
       - kafka
       - db

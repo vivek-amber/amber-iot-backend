@@ -4,6 +4,7 @@
 
 # VS Code
 .vscode/
+env
 
 # Build outputs
 target/
@@ -18,14 +19,13 @@ logs/
 *.log
 
 # Environment files
-.env
-.env.*
+env/*.env
 
 # Application secrets
 application-local.yml
 application-dev.yml
 application-prod.yml
-application.properties
+
 
 # OS files
 .DS_Store
